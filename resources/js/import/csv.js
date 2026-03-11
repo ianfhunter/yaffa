@@ -42,9 +42,26 @@ function storeNestedObjectValue(base, names, value) {
     return base;
 }
 
-// Require the rule engine
-// TODO: make this selectable from a list of available rules
-import engine from './rules/hun_raiffeisen_v1.js';
+// Available import rule engines
+import hunRaiffeisenEngine from './rules/hun_raiffeisen_v1.js';
+import genericEnglishEngine from './rules/generic_en_v1.js';
+
+const availableRuleEngines = {
+    hun_raiffeisen_v1: hunRaiffeisenEngine,
+    generic_en_v1: genericEnglishEngine,
+};
+
+function getSelectedRuleEngine() {
+    const selectedRule = document.getElementById('import_rule')?.value;
+
+    return availableRuleEngines[selectedRule] || hunRaiffeisenEngine;
+}
+
+function updateFileInputState() {
+    const hasAccount = !!$('#account').val();
+    const hasRule = !!document.getElementById('import_rule')?.value;
+    document.getElementById('csv_file').disabled = !(hasAccount && hasRule);
+}
 
 // The following variable is used to store the current transaction being created.
 let recentTransactionDraftId;
@@ -79,7 +96,7 @@ document.getElementById('csv_file').addEventListener('change', function () {
                 config: {},
             };
 
-            engine.run(transaction)
+            getSelectedRuleEngine().run(transaction)
                 .then(({events}) => {
                     // Loop all rules to extract transaction data from row
                     events
@@ -317,16 +334,21 @@ $('#account').select2({
             .done(data => {
                 window.account_currency = data.config.currency;
 
-                // Enable the file input
-                document.getElementById('csv_file').disabled = false;
+                updateFileInputState();
             });
     })
     .on('select2:unselect', function (e) {
         window.account_currency = {};
 
-        // Disable the file input
-        document.getElementById('csv_file').disabled = true;
+        updateFileInputState();
     });
+
+$('#import_rule').on('change', function () {
+    updateFileInputState();
+});
+
+// Initialize file input state on load
+updateFileInputState();
 
 const tableSelector = '#dataTable';
 
@@ -793,9 +815,12 @@ $('#reset').on('click', function () {
     // Reset select2
     $('#account').val(null).trigger('change');
 
+    // Reset selected import rule
+    $('#import_rule').val('hun_raiffeisen_v1').trigger('change');
+
     // Reset file input and make it disabled
     $('#csv_file').val(null);
-    $('#csv_file').prop('disabled', true);
+    updateFileInputState();
 
     // Reset global variables
     window.recentTransactionDraftId = null;

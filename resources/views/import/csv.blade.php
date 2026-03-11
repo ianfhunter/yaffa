@@ -14,7 +14,14 @@
                             <label for="account">{{ __('Target account') }}</label>
                             <select name="account" id="account" class="form-control"></select>
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-3 form-group">
+                            <label for="import_rule">{{ __('Import rule') }}</label>
+                            <select name="import_rule" id="import_rule" class="form-control">
+                                <option value="hun_raiffeisen_v1">{{ __('Hungarian Raiffeisen v1') }}</option>
+                                <option value="generic_en_v1">{{ __('Generic English v1') }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
                             <label for="csv_file">{{ __('File') }}</label><br>
                             <input type="file" class="form-control-file" id="csv_file" name="file" disabled>
                         </div>
